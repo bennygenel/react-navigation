@@ -137,6 +137,7 @@ export default class TabBarBottom
       inactiveBackgroundColor,
       style,
       tabStyle,
+      tabBarHeight,
       underlineEnabled,
       underlineColor,
       underlineSyle
@@ -148,8 +149,9 @@ export default class TabBarBottom
     let tabCount = routes.length;
     let stickWidth = (width / tabCount);
     let stickPosition;
+
     return (
-      <Animated.View style={[styles.tabBar,{ paddingBottom:(underlineEnabled ? 5 : 0)}, style]}>
+      <Animated.View style={[styles.tabBar,{ paddingBottom:(underlineEnabled ? 5 : 0), height: (tabBarHeight ? tabBarHeight : 49)}, style]}>
         {routes.map((route: NavigationRoute, index: number) => {
           const focused = index === navigation.state.index;
           const scene = { route, index, focused };
@@ -191,7 +193,7 @@ export default class TabBarBottom
           );
         })}
         {underlineEnabled &&
-          <Animated.View style={[styles.stick, {width: stickWidth, left:stickPosition, backgroundColor:underlineColor}, underlineSyle]} />
+          <Animated.View style={[styles.stick, {width: stickWidth, top:(tabBarHeight ? (tabBarHeight - 5) : 44), left:stickPosition, backgroundColor:underlineColor}, underlineSyle]} />
         }
       </Animated.View>
     );
