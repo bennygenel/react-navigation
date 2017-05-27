@@ -167,6 +167,7 @@ export default class TabBarBottom
             </TouchableWithoutFeedback>
           );
         })}
+        <Animated.View style={[styles.tab, {height:5, backgroundColor:'red'}]} />
       </Animated.View>
     );
   }
