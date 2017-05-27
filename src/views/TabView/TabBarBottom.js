@@ -17,16 +17,20 @@ import type { TabScene } from './TabView';
 type DefaultProps = {
   activeTintColor: string,
   activeBackgroundColor: string,
+  activeStickColor: string,
   inactiveTintColor: string,
   inactiveBackgroundColor: string,
+  inactiveStickColor: string,
   showLabel: boolean,
 };
 
 type Props = {
   activeTintColor: string,
   activeBackgroundColor: string,
+  activeStickColor: string,
   inactiveTintColor: string,
   inactiveBackgroundColor: string,
+  inactiveStickColor: string,
   position: Animated.Value,
   navigation: NavigationScreenProp<NavigationState, NavigationAction>,
   jumpToIndex: (index: number) => void,
@@ -37,6 +41,8 @@ type Props = {
   labelStyle?: Style,
   tabStyle?: Style,
   showIcon: boolean,
+  underlineEnabled: boolean,
+  underlineSyle?: Style,
 };
 
 export default class TabBarBottom
@@ -45,10 +51,14 @@ export default class TabBarBottom
   static defaultProps = {
     activeTintColor: '#3478f6', // Default active tint color in iOS 10
     activeBackgroundColor: 'transparent',
+    activeStickColor: 'red',
     inactiveTintColor: '#929292', // Default inactive tint color in iOS 10
     inactiveBackgroundColor: 'transparent',
+    inactiveStickColor: 'white',
     showLabel: true,
     showIcon: true,
+    underlineEnabled: false,
+    underlineSyle: {}
   };
 
   props: Props;
@@ -126,13 +136,18 @@ export default class TabBarBottom
       navigation,
       jumpToIndex,
       activeBackgroundColor,
+      activeStickColor,
       inactiveBackgroundColor,
+      inactiveStickColor,
       style,
       tabStyle,
+      underlineEnabled,
+      underlineSyle
     } = this.props;
     const { routes } = navigation.state;
     // Prepend '-1', so there are always at least 2 items in inputRange
     const inputRange = [-1, ...routes.map((x: *, i: number) => i)];
+    const stickInputRange = [-1, ...routes.map((x: *, i: number) => i)];
     return (
       <Animated.View style={[styles.tabBar, style]}>
         {routes.map((route: NavigationRoute, index: number) => {
@@ -140,13 +155,19 @@ export default class TabBarBottom
           const scene = { route, index, focused };
           const outputRange = inputRange.map(
             (inputIndex: number) =>
-              inputIndex === index
-                ? activeBackgroundColor
-                : inactiveBackgroundColor
+              inputIndex === index ? activeBackgroundColor : inactiveBackgroundColor
+          );
+          const stickOutputRange = stickInputRange.map(
+            (inputIndex: number) =>
+              inputIndex === index ? activeStickColor : inctiveStickColor
           );
           const backgroundColor = position.interpolate({
             inputRange,
             outputRange,
+          });
+          const stickColor = position.interpolate({
+            stickInputRange,
+            stickOutputRange
           });
           const justifyContent = this.props.showIcon ? 'flex-end' : 'center';
           return (
@@ -167,7 +188,7 @@ export default class TabBarBottom
             </TouchableWithoutFeedback>
           );
         })}
-        <Animated.View style={[styles.tab, {height:5, backgroundColor:'red'}]} />
+        {underlineEnabled &&  <Animated.View style={[styles.stick, {backgroundColor:stickColor}, underlineSyle]} /> }
       </Animated.View>
     );
   }
@@ -183,6 +204,15 @@ const styles = StyleSheet.create({
   },
   tab: {
     flex: 1,
+    alignItems: 'stretch',
+    justifyContent: 'flex-end',
+  },
+  stick: {
+    flex: 1,
+    height:5,
+    position:'relative',
+    left:0,
+    top:0,
     alignItems: 'stretch',
     justifyContent: 'flex-end',
   },
