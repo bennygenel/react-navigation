@@ -51,10 +51,10 @@ export default class TabBarBottom
   static defaultProps = {
     activeTintColor: '#3478f6', // Default active tint color in iOS 10
     activeBackgroundColor: 'transparent',
-    activeStickColor: 'red',
+    activeStickColor: '#cc0000',
     inactiveTintColor: '#929292', // Default inactive tint color in iOS 10
     inactiveBackgroundColor: 'transparent',
-    inactiveStickColor: 'white',
+    inactiveStickColor: '#f4f4f4',
     showLabel: true,
     showIcon: true,
     underlineEnabled: false,
@@ -165,6 +165,7 @@ export default class TabBarBottom
             inputRange,
             outputRange,
           });
+          console.log('Stick: ', stickInputRange, stickOutputRange);
           const stickColor = position.interpolate({
             stickInputRange,
             stickOutputRange
