@@ -1,7 +1,7 @@
 /* @flow */
 
 import React, { PureComponent } from 'react';
-import { Animated, TouchableWithoutFeedback, StyleSheet } from 'react-native';
+import { Animated, TouchableWithoutFeedback, StyleSheet, Dimensions } from 'react-native';
 import TabBarIcon from './TabBarIcon';
 
 import type {
@@ -14,23 +14,21 @@ import type {
 
 import type { TabScene } from './TabView';
 
+const {width, height} = Dimensions.get('window');
+
 type DefaultProps = {
   activeTintColor: string,
   activeBackgroundColor: string,
-  activeStickColor: string,
   inactiveTintColor: string,
   inactiveBackgroundColor: string,
-  inactiveStickColor: string,
   showLabel: boolean,
 };
 
 type Props = {
   activeTintColor: string,
   activeBackgroundColor: string,
-  activeStickColor: string,
   inactiveTintColor: string,
   inactiveBackgroundColor: string,
-  inactiveStickColor: string,
   position: Animated.Value,
   navigation: NavigationScreenProp<NavigationState, NavigationAction>,
   jumpToIndex: (index: number) => void,
@@ -42,6 +40,7 @@ type Props = {
   tabStyle?: Style,
   showIcon: boolean,
   underlineEnabled: boolean,
+  underlineColor:string,
   underlineSyle?: Style,
 };
 
@@ -51,13 +50,12 @@ export default class TabBarBottom
   static defaultProps = {
     activeTintColor: '#3478f6', // Default active tint color in iOS 10
     activeBackgroundColor: 'transparent',
-    activeStickColor: '#cc0000',
     inactiveTintColor: '#929292', // Default inactive tint color in iOS 10
     inactiveBackgroundColor: 'transparent',
-    inactiveStickColor: '#f4f4f4',
     showLabel: true,
     showIcon: true,
     underlineEnabled: false,
+    underlineColor: '#cc0000',
     underlineSyle: {}
   };
 
@@ -136,20 +134,22 @@ export default class TabBarBottom
       navigation,
       jumpToIndex,
       activeBackgroundColor,
-      activeStickColor,
       inactiveBackgroundColor,
-      inactiveStickColor,
       style,
       tabStyle,
       underlineEnabled,
+      underlineColor,
       underlineSyle
     } = this.props;
     const { routes } = navigation.state;
     // Prepend '-1', so there are always at least 2 items in inputRange
     const inputRange = [-1, ...routes.map((x: *, i: number) => i)];
     const stickInputRange = [-1, ...routes.map((x: *, i: number) => i)];
+    let tabCount = routes.length;
+    let stickWidth = (width / tabCount);
+    let stickPosition;
     return (
-      <Animated.View style={[styles.tabBar, style]}>
+      <Animated.View style={[styles.tabBar,{ paddingBottom:(underlineEnabled ? 5 : 0)}, style]}>
         {routes.map((route: NavigationRoute, index: number) => {
           const focused = index === navigation.state.index;
           const scene = { route, index, focused };
@@ -157,18 +157,19 @@ export default class TabBarBottom
             (inputIndex: number) =>
               inputIndex === index ? activeBackgroundColor : inactiveBackgroundColor
           );
-          const stickOutputRange = stickInputRange.map(
-            (inputIndex: number) =>
-              inputIndex === index ? activeStickColor : inactiveStickColor
-          );
           const backgroundColor = position.interpolate({
             inputRange,
             outputRange,
           });
-          console.log('Stick: ', stickInputRange, stickOutputRange);
-          const stickColor = position.interpolate({
-            stickInputRange,
-            stickOutputRange
+          let stickInputRange = [];
+          let stickOutputRange = [];
+          for(let i = 0; i < tabCount; i++) {
+            stickInputRange.push(i);
+            stickOutputRange.push(i * stickWidth);
+          }
+          stickPosition = position.interpolate({
+            inputRange:stickInputRange,
+            outputRange:stickOutputRange,
           });
           const justifyContent = this.props.showIcon ? 'flex-end' : 'center';
           return (
@@ -189,7 +190,9 @@ export default class TabBarBottom
             </TouchableWithoutFeedback>
           );
         })}
-        {underlineEnabled &&  <Animated.View style={[styles.stick, {backgroundColor:stickColor}, underlineSyle]} /> }
+        {underlineEnabled &&
+          <Animated.View style={[styles.stick, {width: stickWidth, left:stickPosition, backgroundColor:underlineColor}, underlineSyle]} />
+        }
       </Animated.View>
     );
   }
@@ -211,11 +214,10 @@ const styles = StyleSheet.create({
   stick: {
     flex: 1,
     height:5,
-    position:'relative',
-    left:0,
-    top:0,
+    top:25,
+    position:'absolute',
     alignItems: 'stretch',
-    justifyContent: 'flex-end',
+    justifyContent: 'flex-start',
   },
   icon: {
     flexGrow: 1,
