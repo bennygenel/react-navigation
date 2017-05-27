@@ -159,7 +159,7 @@ export default class TabBarBottom
           );
           const stickOutputRange = stickInputRange.map(
             (inputIndex: number) =>
-              inputIndex === index ? activeStickColor : inctiveStickColor
+              inputIndex === index ? activeStickColor : inactiveStickColor
           );
           const backgroundColor = position.interpolate({
             inputRange,
